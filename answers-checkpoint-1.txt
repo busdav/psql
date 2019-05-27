@@ -1,0 +1,91 @@
+	1. What data types do each of these values represent?
+		1. "A Clockwork Orange" - STRING
+		2. 42 - INTEGER
+		3. 09/02/1945 - DATE
+		4. 98.7 - FLOAT
+		5. $15.99 - MONEY
+		
+	2. Explain when a database would be used. Explain when a text file would be used.
+		Database: whenever we need to persist data that needs to be accessed by multiple applications or users at the same time, and we need such data to be easily searchable and manipulatable. 
+    Text file: whenever we'd like to persist data outside of an application and don't have the requirements we just mentioned. 
+
+  3. Describe one difference between SQL and other programming languages.
+		1. SQL is a declarative programming language. 
+
+	4. In your own words, explain how the pieces of a database system fit together at a high level.
+		1. A database can live on a server as an application which can be accessed via API calls. 
+
+	5. Explain the meaning of table, row, column, and value.
+		1. Table: you can think of the database as a table. One row would be a record, one column would be an attribute, and one value is information contained in a cell which is where row and column meet. 
+	
+  6. List three data types that can be used in a table.
+		1. String, integer, float. 
+
+	7. Given this payments table, provide an English description of the following queries and include their results: 
+  https://www.db-fiddle.com/f/iQAEYktwysXqcLQHv2dwbc/0
+
+    SELECT date, amount
+        FROM payments;
+     
+      "Select the columns date and amount from the table payments, and return them to me in a new table."
+       
+      | date                     | amount    |
+      | ------------------------ | --------- |
+      | 2016-05-01T00:00:00.000Z | 1500.0000 |
+      | 2016-05-10T00:00:00.000Z | 37.0000   |
+      | 2016-05-15T00:00:00.000Z | 124.9300  |
+      | 2016-05-23T00:00:00.000Z | 54.7200   |
+
+      
+    SELECT amount
+        FROM payments
+        WHERE amount > 500;
+     
+      "Select the column amount from the table payments, all records where the amount is greater than 500, and return them to me in a new table.
+
+      | amount    |
+      | --------- |
+      | 1500.0000 |
+
+
+    SELECT *
+        FROM payments
+        WHERE payee = 'Mega Foods';
+     
+      "Select all columns from the table payments, all records where the payee is Mega Foods, and return them to me in a new table."
+
+      | date                     | payee      | amount   | memo      |
+      | ------------------------ | ---------- | -------- | --------- |
+      | 2016-05-15T00:00:00.000Z | Mega Foods | 124.9300 | Groceries |
+
+
+
+  13. Given this users table, write SQL queries using the following criteria and include the output:
+  https://www.db-fiddle.com/f/iQAEYktwysXqcLQHv2dwbc/0
+  
+		○ The email and sign-up date for the user named DeAndre Data.
+			§ SELECT email, signup FROM users WHERE name = 'DeAndre Data';
+
+      | email             | signup                   |
+      | ----------------- | ------------------------ |
+      | datad@comcast.net | 2008-01-20T00:00:00.000Z |
+
+
+		○ The user ID for the user with email 'aleesia.algorithm@uw.edu'.
+			§ SELECT userId FROM users WHERE email = 'aleesia.algorithm@uw.edu';
+
+      | userid |
+      | ------ |
+      | 1      |
+
+
+
+		○ All the columns for the user ID equal to 4.
+			§ SELECT * FROM users WHERE userId = 4;
+
+
+    SELECT * FROM users WHERE userId = 4;
+
+    | userid | name           | email             | signup                   |
+    | ------ | -------------- | ----------------- | ------------------------ |
+    | 4      | Brandy Boolean | bboolean@nasa.gov | 1999-10-15T00:00:00.000Z |
