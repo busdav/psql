@@ -63,8 +63,10 @@ SELECT p.name, c.salary, c.vacation_days
 
     SELECT c.name, a.first_name, a.last_name, ca.date
     FROM cats AS c
-    JOIN cat_adoptions AS ca ON c.id = ca.cat_id
-    JOIN adopters AS a ON ca.adopter_id = a.id
+    JOIN cat_adoptions AS ca 
+    ON c.id = ca.cat_id
+    JOIN adopters AS a 
+    ON ca.adopter_id = a.id
     WHERE ca.date >= (CURRENT_DATE - 30);
 
 | name     | first_name | last_name | date                     |
@@ -73,14 +75,24 @@ SELECT p.name, c.salary, c.vacation_days
 | Victoire | Argus      | Filch     | 2019-05-20T00:00:00.000Z |
 
   -- for my own notes: 
+  
   SELECT simply states the columns we want to display. Everything else we worry about later. 
+  
   FROM is the first table we look at - depending on what we put after FROM, we decide whether (if applicable) it will be LEFT OUTER JOIN, or RIGHT OUTER JOIN. 
-  In the JOIN statements, we simply add the TABLES (we're not talking about columns here - that, we already specified in the SELECT statement) that we need to pull additional data from. 
-  And, we say UNDER WHAT CONDITIONS we pull that additional data in -> only when it's relevant for our results. 
-  And, we may add tables under JOIN statements from which we DON'T want to display any columns - see below, we might join them simply so we can use them to join a second table. 
-  E.g., above, we want a list of CATS -> we're not interested in ALL data from the cat_adoptions table - ONLY that data, those records, that have a matching cat_id. 
+  
+  In the  JOIN statements, we simply add the TABLES (we're not talking about columns here - that, we already specified in the SELECT statement) that we need to pull additional data from. 
+  And, we say UNDER WHAT CONDITIONS we pull that additional data in -> only when it's relevant for our results. With an ON statement on an INNER JOIN for example, e.g. ON c.id = ca.cat_id, we say, 
+  from the get-go, only include that data from the joined table where the cat_id value from the cat_adoptions table matches the id value from the cats table. 
+  E.g., above, we want a list of CATS -> we're not interested in ALL data from the cat_adoptions table, i.e., all cat adoptions that have ever taken place (because, that's what that table is about - cat *adoptions*)
+  - ONLY that data, those records, i.e. those rows, that have a matching cat_id. 
+  
   Once we've joined the first table, we can then use that first joined table also in a second JOIN statement. And again, from the second joined table, we only pull in data that matches our conditions. 
-  Good example for all of that is also next question. 
+  And, we may add tables under JOIN statements from which we DON'T want to display any columns - see below, we might join them simply so we can use them to join a second table. 
+
+  Then, finally, we can further limit the results by putting a WHERE statement. 
+
+  Good example for all of that is also the following prompt:
+
 
 		○ Create a list of adopters who have not yet chosen a dog to adopt.
 
@@ -97,7 +109,107 @@ SELECT p.name, c.salary, c.vacation_days
 
     
 		○ Lists of all cats and all dogs who have not been adopted.
+
+    
+    SELECT c.name AS animal_name
+    FROM cats AS c
+    LEFT OUTER JOIN cat_adoptions AS ca
+    ON c.id = ca.cat_id
+    WHERE ca.cat_id IS NULL
+    UNION
+    SELECT d.name 
+    FROM dogs AS d
+    LEFT OUTER JOIN dog_adoptions AS da
+    ON d.id = da.dog_id
+    WHERE da.dog_id IS NULL;
+
+    | animal_name |
+    | ----------- |
+    | Boujee      |
+    | Lassie      |
+    | Marley      |
+    | Marmaduke   |
+    | Munchkin    |
+    | Nala        |
+    | Seashell    |
+
+
+
 		○ The name of the person who adopted Rosco.
-	9. Using this Library schema and data, write queries applying the following scenarios and include the results:
+
+        SELECT a.first_name, a.last_name, d.name
+        FROM adopters AS a
+        JOIN dog_adoptions AS da
+        ON a.id = da.adopter_id
+        JOIN dogs AS d
+        ON da.dog_id = d.id
+        WHERE d.name = 'Rosco';
+
+    | first_name | last_name | name  |
+    | ---------- | --------- | ----- |
+    | Argus      | Filch     | Rosco |
+
+
+	9. Using this Library schema and data, write queries applying the following scenarios and include the results: https://www.db-fiddle.com/f/j4EGoWzHWDBVtiYzB9ygC4/0
+
 		○ To determine if the library should buy more copies of a given book, please provide the names and position, in order, of all of the patrons with a hold (request for a book with all copies checked out) on "Advanced Potion-Making".
-List all of the library patrons. If they have one or more books checked out, list the books with the patrons.
+    
+        SELECT b.title, h.rank, p.name
+        FROM patrons AS p
+        JOIN holds AS h
+        ON p.id = h.patron_id
+        JOIN books AS b
+        ON h.isbn = b.isbn
+        WHERE b.title = 'Advanced Potion-Making'
+        ORDER BY h.rank ASC;
+
+    | title                  | rank | name           |
+    | ---------------------- | ---- | -------------- |
+    | Advanced Potion-Making | 1    | Terry Boot     |
+    | Advanced Potion-Making | 2    | Cedric Diggory |
+
+    
+    
+    List all of the library patrons. If they have one or more books checked out, list the books with the patrons.
+
+
+      -- DB: NOTE THAT BOTH OF THESE SOLUTIONS ONLY WORK BECAUSE NO PATRON HAS CHECKED OUT MORE THAN ONE BOOK. OTHERWISE, THEY WOULD THROW AN ERROR. 
+
+      -- THIS FIRST SOLUTION SEEMS NOT CLEAN, TOO MUCH WE DON'T NEED:
+
+      -- SELECT DISTINCT patrons.name, 
+      -- 	(SELECT out_book.title 
+      -- 	FROM 
+      -- 		(SELECT t.checked_in_date, t.patron_id, b.title 
+      --  		FROM transactions AS t
+      --   		LEFT OUTER JOIN books AS b 
+      --         USING (isbn)
+      -- 		WHERE t.checked_in_date IS NULL) AS out_book 
+      --   	WHERE out_book.patron_id = patrons.id) 
+      -- FROM transactions AS t
+      -- LEFT OUTER JOIN patrons 
+      -- ON t.patron_id = patrons.id 
+      -- LEFT OUTER JOIN books 
+      -- USING (isbn);
+
+
+
+        SELECT p.name, 
+          (SELECT out_book.title 
+          FROM 
+            (SELECT t.checked_in_date, t.patron_id, b.title 
+            FROM transactions AS t
+              LEFT OUTER JOIN books AS b 
+                USING (isbn)
+            WHERE t.checked_in_date IS NULL) AS out_book 
+            WHERE out_book.patron_id = p.id) 
+        FROM patrons AS p
+        ORDER BY p.name ASC;
+
+    | name             | title                                   |
+    | ---------------- | --------------------------------------- |
+    | Cedric Diggory   | Fantastic Beasts and Where to Find Them |
+    | Cho Chang        |                                         |
+    | Hermione Granger |                                         |
+    | Padma Patil      |                                         |
+    | Terry Boot       | Advanced Potion-Making                  |
